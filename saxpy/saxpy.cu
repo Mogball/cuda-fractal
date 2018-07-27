@@ -1,5 +1,5 @@
-#include "gpu_error.cuh"
 #include <stdio.h>
+#include "gpu_error.cuh"
 
 /* Thread and blocks are one-dimensional
     ___________   ___________   ___________
@@ -54,7 +54,7 @@ int main(void) {
     errchk( cudaDeviceSynchronize() );
 
     // Copy results back to host
-    errchk( cudaMemcpy(y, d_y, N * sizeof(float), cudaMemcpyDeviceToDevice) );
+    errchk( cudaMemcpy(y, d_y, N * sizeof(float), cudaMemcpyDeviceToHost) );
 
     // Compute max error
     float max_error = 0.0f;
@@ -69,5 +69,5 @@ int main(void) {
     free(x);
     free(y);
     errchk( cudaFree(d_x) );
-    errchk( cudaFRee(d_y) );
+    errchk( cudaFree(d_y) );
 }
