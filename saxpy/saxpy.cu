@@ -60,7 +60,7 @@ int main(void) {
     float max_error = 0.0f;
     float expected = 10.0f; // 2 * 3 + 4
     for (int i = 0; i < N; ++i) {
-        max_error = max(max_error, abs(y[i] - expected));
+        max_error = max(max_error, fabs(y[i] - expected));
     }
 
     printf("Maximum error: %.5f\n", max_error);

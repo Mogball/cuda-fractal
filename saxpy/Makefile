@@ -16,3 +16,6 @@ clean:
 
 run: $(DIR)/saxpy
 	@$(DIR)/saxpy
+
+profile: $(DIR)/saxpy
+	@nvprof $(DIR)/saxpy
