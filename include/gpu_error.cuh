@@ -1,4 +1,5 @@
 #pragma once
+#include <stdio.h>
 
 #define errchk(res) { gpu_assert((res), __FILE__, __LINE__); }
 

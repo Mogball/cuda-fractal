@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 /**
  * Compute mandelbot values.

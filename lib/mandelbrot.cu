@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <stdio.h>
 #include <gpu_error.cuh>
 
 #define MIN_X   (-2.0)
@@ -11,7 +10,7 @@
 
 __device__
 uint32_t argb(uint8_t r, uint8_t g, uint8_t b) {
-    return (0xff << 6) | (r << 4) | (g << 2) | b;
+    return (0xff << 24) | (r << 16) | (g << 8) | b;
 }
 
 __device__
@@ -41,8 +40,8 @@ long mandelbrot_compute(double x0, double y0, long T) {
 
 __global__
 void mandelbrot(int max_x, int max_y, long T, uint32_t *data) {
-    int index_x = blockIdx.x + blockDim.x + threadIdx.x;
-    int index_y = blockIdx.y + blockDim.y + threadIdx.y;
+    int index_x = blockIdx.x * blockDim.x + threadIdx.x;
+    int index_y = blockIdx.y * blockDim.y + threadIdx.y;
     int stride_x = gridDim.x * blockDim.x;
     int stride_y = gridDim.y * blockDim.y;
     double xm = (double) max_x;
@@ -69,7 +68,7 @@ void gpu_mandelbrot(int max_x, int max_y, long T, uint32_t *data) {
         (max_y + block_dim.y - 1) / block_dim.y
     );
     mandelbrot<<<block_num, block_dim>>>(max_x, max_y, T, device_data);
-    errchk( cudaPeekAtLastError() );
+    errchk( cudaPeekAtLastError()   );
     errchk( cudaDeviceSynchronize() );
 
     errchk( cudaMemcpy(data, device_data, max_x * max_y * sizeof(uint32_t), cudaMemcpyDeviceToHost) );

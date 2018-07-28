@@ -1,6 +1,6 @@
 CC=nvcc
 DIR=bin
-IDIR=../common
+IDIR=../include
 CFLAGS=-I$(IDIR)
 
 all: build
