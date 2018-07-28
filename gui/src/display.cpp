@@ -5,6 +5,8 @@
 #include <QPainter>
 #include <memory>
 
+#include <QDebug>
+
 using namespace std;
 
 static constexpr int display_width = 1800;
@@ -21,7 +23,7 @@ private:
 };
 
 Display::Impl::Impl(Display *display) :
-    m_img(display->width(), display->height(), QImage::Format_ARGB32) {}
+    m_img(display_width, display_height, QImage::Format_ARGB32) {}
 
 QImage &Display::Impl::image() { return m_img; }
 
