@@ -5,8 +5,8 @@
 #include <QLayout>
 #include <memory>
 
-static constexpr int window_width = 1600;
-static constexpr int window_height = 900;
+static constexpr int window_width = 2400;
+static constexpr int window_height = 1350;
 
 using namespace std;
 

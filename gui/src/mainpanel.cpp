@@ -1,7 +1,7 @@
 #include "mainpanel.h"
 #include "mainwindow.h"
+#include "display.h"
 
-#include <QPushButton>
 #include <QVBoxLayout>
 #include <memory>
 
@@ -12,14 +12,14 @@ public:
     Impl(MainPanel *pan);
 
 private:
+    unique_ptr<Display> m_display;
     unique_ptr<QVBoxLayout> m_layout;
-    unique_ptr<QPushButton> m_label;
 };
 
 MainPanel::Impl::Impl(MainPanel *pan) :
-    m_layout(make_unique<QVBoxLayout>()),
-    m_label(make_unique<QPushButton>("Hello World")) {
-    m_layout->addWidget(m_label.get());
+    m_display(make_unique<Display>(pan)),
+    m_layout(make_unique<QVBoxLayout>()) {
+    m_layout->addWidget(m_display.get());
     m_layout->setAlignment(Qt::AlignHCenter);
     pan->setLayout(m_layout.get());
 }
