@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "gpu_error.cuh"
+#include <gpu_error.cuh>
 
 /* Thread and blocks are one-dimensional
     ___________   ___________   ___________
