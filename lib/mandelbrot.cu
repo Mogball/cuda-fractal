@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <gpu_error.cuh>
 
+// Hardcoded range on Mandelbrot set, which ranges
+// from X: (-2, 1) and Y: (-1, 1)
 #define MIN_X   (-2.0)
 #define MAX_X   (+1.0)
 #define MIN_Y   (-1.0)
@@ -8,17 +10,38 @@
 #define RANGE_X (MAX_X - MIN_X)
 #define RANGE_Y (MAX_Y - MIN_Y)
 
+/**
+ * Device function to compute ARGB pixel.
+ * @param r 8-bit red value
+ * @param g 8-bit green value
+ * @param b 8-bit blue value
+ * @return ARGB pixel with max alpha
+ */
 __device__
 uint32_t argb(uint8_t r, uint8_t g, uint8_t b) {
     return (0xff << 24) | (r << 16) | (g << 8) | b;
 }
 
+/**
+ * Basic coloring with greyscale.
+ * @param t escape time for the pixel
+ * @param T max iterations
+ * @return greyscale ARGB pixel
+ */
 __device__
 uint32_t color_greyscale(long t, long T) {
     uint8_t grey = (uint8_t) (t / (double) T * 0xff);
     return argb(grey, grey, grey);
 }
 
+/**
+ * Device function to compute Mandelbrot escape time for
+ * a particular pixel, or coordinate (x0, y0).
+ * @param x0 x-value
+ * @param y0 y-value
+ * @param T  max iterations
+ * @return Mandelbrot escape time
+ */
 __device__
 long mandelbrot_compute(double x0, double y0, long T) {
     double x = 0;
@@ -38,6 +61,13 @@ long mandelbrot_compute(double x0, double y0, long T) {
     return t;
 }
 
+/**
+ * Kernel to compute Mandelbrot value at pixels.
+ * @param max_x maximum pixel x-index
+ * @param max_y maximum pixel y-index
+ * @param T     max iterations
+ * @param data  array to store pixel data
+ */
 __global__
 void mandelbrot(int max_x, int max_y, long T, uint32_t *data) {
     int index_x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -58,10 +88,19 @@ void mandelbrot(int max_x, int max_y, long T, uint32_t *data) {
     }
 }
 
+/**
+ * Exposed function to used GPU to compute Mandelbrot data.
+ * @param max_x image width
+ * @param max_y image height
+ * @param T     max iteration depth
+ * @param data  array to store pixel data
+ */
 void gpu_mandelbrot(int max_x, int max_y, long T, uint32_t *data) {
+    // Allocate device image data
     uint32_t *device_data;
     errchk( cudaMalloc(&device_data, max_x * max_y * sizeof(uint32_t)) );
 
+    // Launch Mandelbrot kernels
     dim3 block_dim(16, 16);
     dim3 block_num(
         (max_x + block_dim.x - 1) / block_dim.x,
@@ -71,6 +110,7 @@ void gpu_mandelbrot(int max_x, int max_y, long T, uint32_t *data) {
     errchk( cudaPeekAtLastError()   );
     errchk( cudaDeviceSynchronize() );
 
+    // Copy data into host memory
     errchk( cudaMemcpy(data, device_data, max_x * max_y * sizeof(uint32_t), cudaMemcpyDeviceToHost) );
     errchk( cudaFree(device_data) );
 }
