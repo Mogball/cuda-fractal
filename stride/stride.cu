@@ -24,8 +24,8 @@ int main(void) {
         y[i] = 4.0f;
     }
 
-    int blockSize = 256;
-    int numBlocks = (N + blockSize - 1) / blockSize;
+    int blockSize = 1 << 8;
+    int numBlocks = 1 << 10;
     saxpy<<<numBlocks, blockSize>>>(N, 2.0f, x, y);
     errchk( cudaPeekAtLastError() );
     errchk( cudaDeviceSynchronize() );
