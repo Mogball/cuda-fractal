@@ -20,5 +20,5 @@ clean:
 reset:
 	@rm -rf $(DIR)
 
-run:
+run: build
 	@$(DIR)/$(NAME)
