@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdio.h>
+#include <gpu_error.cuh>
 
 #define MIN_X   (-2.0)
 #define MAX_X   (+1.0)
