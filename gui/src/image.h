@@ -16,6 +16,8 @@ public:
     QImage &image();
 
     void launchRender();
+    void recenter(int x, int y);
+    void zoom(int delta);
 
 protected:
     Q_SLOT void renderImage();

@@ -25,6 +25,20 @@ void Image::launchRender() {
     QTimer::singleShot(0, this, &Image::renderImage);
 }
 
+void Image::recenter(int x, int y) {
+    m_cfg.xc += (x - m_cfg.max / 2) * m_cfg.s / m_cfg.max;
+    m_cfg.yc += (y - m_cfg.max / 2) * m_cfg.s / m_cfg.max;
+}
+
+void Image::zoom(int delta) {
+    double zoom = delta / 10.0;
+    if (delta > 0) {
+        m_cfg.s /= zoom;
+    } else {
+        m_cfg.s *= -zoom;
+    }
+}
+
 void Image::renderImage() {
     gpu_mandelbrot(m_cfg, m_vec.data());
     uchar *data = reinterpret_cast<uchar *>(m_vec.data());

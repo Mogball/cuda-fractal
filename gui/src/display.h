@@ -4,6 +4,8 @@
 #include <memory>
 
 class QPaintEvent;
+class QWheelEvent;
+class QMouseEvent;
 class MainPanel;
 
 class Display: public QOpenGLWidget {
@@ -12,6 +14,8 @@ public:
     ~Display();
 
     void paintEvent(QPaintEvent *ev) override;
+    void wheelEvent(QWheelEvent *ev) override;
+    void mouseReleaseEvent(QMouseEvent *ev) override;
 
 protected:
     Q_SLOT void renderUpdate();
