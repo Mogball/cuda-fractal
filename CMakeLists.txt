@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION 3.1)
+project(cuda-fractal)
+
+set(ROOT ${CMAKE_CURRENT_LIST_DIR})
+set(INCLUDE_DIR ${ROOT}/include)
+add_subdirectory(${ROOT}/saxpy)
+add_subdirectory(${ROOT}/stride)
+add_subdirectory(${ROOT}/bitmap)
+add_subdirectory(${ROOT}/mandelbrot)

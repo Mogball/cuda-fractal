@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1.0)
-project(fractal-gui)
+project(fractal-gui CXX)
 
 # Default to Debug build
 if (NOT CMAKE_BUILD_TYPE)
