@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <gpu.h>
 #include <gpu_error.cuh>
 
 // Hardcoded range on Mandelbrot set, which ranges
@@ -63,54 +64,51 @@ long mandelbrot_compute(double x0, double y0, long T) {
 
 /**
  * Kernel to compute Mandelbrot value at pixels.
- * @param max_x maximum pixel x-index
- * @param max_y maximum pixel y-index
- * @param T     max iterations
- * @param data  array to store pixel data
+ * @param config fractal rendering config
+ * @param data   array to store pixel data
  */
 __global__
-void mandelbrot(int max_x, int max_y, long T, uint32_t *data) {
+void mandelbrot(render_config config, uint32_t *data) {
     int index_x = blockIdx.x * blockDim.x + threadIdx.x;
     int index_y = blockIdx.y * blockDim.y + threadIdx.y;
     int stride_x = gridDim.x * blockDim.x;
     int stride_y = gridDim.y * blockDim.y;
-    double xm = (double) max_x;
-    double ym = (double) max_y;
+    double m = (double) config.max;
     double x0, y0;
     long t;
-    for (int i_x = index_x; i_x < max_x; i_x += stride_x) {
-        for (int i_y = index_y; i_y < max_y; i_y += stride_y) {
-            x0 = i_x / xm * RANGE_X + MIN_X;
-            y0 = i_y / ym * RANGE_Y + MIN_Y;
-            t = mandelbrot_compute(x0, y0, T);
-            *(data + i_x + i_y * max_x) = color_greyscale(t, T);
+    for (int i_x = index_x; i_x < m; i_x += stride_x) {
+        for (int i_y = index_y; i_y < m; i_y += stride_y) {
+            x0 = (i_x / m - 0.5) * config.s + config.xc;
+            y0 = (i_y / m - 0.5) * config.s + config.yc;
+            t = mandelbrot_compute(x0, y0, config.T);
+            *(data + i_x + i_y * config.max) = color_greyscale(t, config.T);
         }
     }
 }
 
 /**
  * Exposed function to used GPU to compute Mandelbrot data.
- * @param max_x image width
- * @param max_y image height
- * @param T     max iteration depth
- * @param data  array to store pixel data
+ * @param config fractal rendering configuration
+ * @param data   array to store pixel data
  */
-void gpu_mandelbrot(int max_x, int max_y, long T, uint32_t *data) {
+void gpu_mandelbrot(const render_config &config, uint32_t *data) {
     // Allocate device image data
     uint32_t *device_data;
-    errchk( cudaMalloc(&device_data, max_x * max_y * sizeof(uint32_t)) );
+    uint32_t num_pixels = config.max * config.max;
+    uint32_t num_bytes = num_pixels * sizeof(uint32_t);
+    errchk( cudaMalloc(&device_data, num_bytes) );
 
     // Launch Mandelbrot kernels
     dim3 block_dim(16, 16);
     dim3 block_num(
-        (max_x + block_dim.x - 1) / block_dim.x,
-        (max_y + block_dim.y - 1) / block_dim.y
+        (config.max + block_dim.x - 1) / block_dim.x,
+        (config.max + block_dim.y - 1) / block_dim.y
     );
-    mandelbrot<<<block_num, block_dim>>>(max_x, max_y, T, device_data);
+    mandelbrot<<<block_num, block_dim>>>(config, device_data);
     errchk( cudaPeekAtLastError()   );
     errchk( cudaDeviceSynchronize() );
 
     // Copy data into host memory
-    errchk( cudaMemcpy(data, device_data, max_x * max_y * sizeof(uint32_t), cudaMemcpyDeviceToHost) );
+    errchk( cudaMemcpy(data, device_data, num_bytes, cudaMemcpyDeviceToHost) );
     errchk( cudaFree(device_data) );
 }

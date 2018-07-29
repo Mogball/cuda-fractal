@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1.0)
-project(fractal-gui CXX)
+project(fractal-gui CXX CUDA)
 
 # Default to Debug build
 if (NOT CMAKE_BUILD_TYPE)
@@ -32,9 +32,11 @@ add_executable(fractal-gui ${SOURCE_FILES} ${HEADER_FILES} ${FORM_FILES})
 target_include_directories(fractal-gui PRIVATE
     ${Qt5Widgets_INCLUDE_DIRS}
     ${Qt5Core_INCLUDE_DIRS}
-    ${Qt5Gui_INCLUDE_DIRS})
+    ${Qt5Gui_INCLUDE_DIRS}
+    ${INCLUDE_DIR})
 
 target_link_libraries(fractal-gui
     Qt5::Widgets
     Qt5::Core
-    Qt5::Gui)
+    Qt5::Gui
+    gpu)

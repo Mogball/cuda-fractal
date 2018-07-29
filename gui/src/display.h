@@ -13,6 +13,9 @@ public:
 
     void paintEvent(QPaintEvent *ev) override;
 
+protected:
+    Q_SLOT void renderUpdate();
+
 private:
     class Impl;
     std::unique_ptr<Impl> m_impl;

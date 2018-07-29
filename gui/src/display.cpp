@@ -1,42 +1,45 @@
+#include "image.h"
 #include "display.h"
 #include "mainpanel.h"
 
-#include <QImage>
 #include <QPainter>
 #include <memory>
 
-#include <QDebug>
-
 using namespace std;
 
-static constexpr int display_width = 1800;
-static constexpr int display_height = 1200;
+static constexpr int display_dim = 2000;
 
 class Display::Impl {
 public:
-    Impl(Display *display);
+    Impl(int dim);
 
-    QImage &image();
-
-private:
-    QImage m_img;
+    unique_ptr<Image> del;
 };
 
-Display::Impl::Impl(Display *display) :
-    m_img(display_width, display_height, QImage::Format_ARGB32) {}
-
-QImage &Display::Impl::image() { return m_img; }
+Display::Impl::Impl(int dim) :
+    del(make_unique<Image>(dim)) {}
 
 Display::Display(MainPanel *panel) :
     QOpenGLWidget(panel),
-    m_impl(make_unique<Impl>(this)) {
-    setFixedSize(display_width, display_height);
+    m_impl(make_unique<Impl>(display_dim)) {
+    setFixedSize(display_dim, display_dim);
+    connect(
+        m_impl->del.get(),
+        &Image::renderDone,
+        this,
+        &Display::renderUpdate
+    );
+    m_impl->del->launchRender();
 }
 
 Display::~Display() = default;
 
 void Display::paintEvent(QPaintEvent *) {
     QPainter painter(this);
-    painter.drawImage(0, 0, m_impl->image());
+    painter.drawImage(0, 0, m_impl->del->image());
     painter.end();
+}
+
+void Display::renderUpdate() {
+    update();
 }

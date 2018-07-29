@@ -2,7 +2,7 @@
 #include "mainwindow.h"
 #include "display.h"
 
-#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <memory>
 
 using namespace std;
@@ -13,14 +13,14 @@ public:
 
 private:
     unique_ptr<Display> m_display;
-    unique_ptr<QVBoxLayout> m_layout;
+    unique_ptr<QHBoxLayout> m_layout;
 };
 
 MainPanel::Impl::Impl(MainPanel *pan) :
     m_display(make_unique<Display>(pan)),
-    m_layout(make_unique<QVBoxLayout>()) {
+    m_layout(make_unique<QHBoxLayout>()) {
     m_layout->addWidget(m_display.get());
-    m_layout->setAlignment(Qt::AlignHCenter);
+    m_layout->setAlignment(Qt::AlignVCenter);
     pan->setLayout(m_layout.get());
 }
 

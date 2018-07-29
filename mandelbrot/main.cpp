@@ -3,17 +3,17 @@
 #include <stdio.h>
 #include <stdint.h>
 
-static constexpr int max_x = 6144;
-static constexpr int max_y = 4096;
-static constexpr int T = 1 << 16;
+static constexpr int fractal_max = 4096;
+static constexpr int fractal_depth = 1 << 10;
 
 int main(void) {
-    static uint32_t data[max_x * max_y];
+    static uint32_t data[fractal_max * fractal_max];
+    render_config config = {fractal_max, fractal_depth, -0.5, 0.0, 3.0};
     printf("Running GPU kernel .... ");
-    gpu_mandelbrot(max_x, max_y, T, data);
+    gpu_mandelbrot(config, data);
     printf("Done!\n");
 
     printf("Saving fractal image .. ");
-    save_bitmap("fractal.bmp", max_x, max_y, data);
+    save_bitmap("fractal.bmp", fractal_max, fractal_max, data);
     printf("Done!\n");
 }
