@@ -2,14 +2,20 @@
 #include <gpu.h>
 #include <gpu_error.cuh>
 
-// Hardcoded range on Mandelbrot set, which ranges
-// from X: (-2, 1) and Y: (-1, 1)
-#define MIN_X   (-2.0)
-#define MAX_X   (+1.0)
-#define MIN_Y   (-1.0)
-#define MAX_Y   (+1.0)
-#define RANGE_X (MAX_X - MIN_X)
-#define RANGE_Y (MAX_Y - MIN_Y)
+#include "color.cuh"
+
+#define MAX_SPECTRUM    16
+__constant__ color  c_C[MAX_SPECTRUM];
+__constant__ color  c_D[MAX_SPECTRUM];
+__constant__ double c_F[MAX_SPECTRUM];
+__constant__ double c_Fcul[MAX_SPECTRUM];
+
+static void color_prepare(size_t L, color *c, color *d, double *F, double *Fcul) {
+    errchk( cudaMemcpyToSymbol(c_C,    c,    L * sizeof(color))  );
+    errchk( cudaMemcpyToSymbol(c_d,    d,    L * sizeof(color))  );
+    errchk( cudaMemcpyToSymbol(c_F,    F,    L * sizeof(double)) );
+    errchk( cudaMemcpyToSymbol(c_Fcul, Fcul, L * sizeof(double)) );
+}
 
 /**
  * Device function to compute ARGB pixel.
