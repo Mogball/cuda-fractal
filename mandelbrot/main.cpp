@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-constexpr int fractal_max = 4096;
-constexpr int fractal_depth = 1 << 10;
+constexpr int fractal_max = 1028;
+constexpr int fractal_depth = 1 << 4;
 
 int main(void) {
     static uint32_t data[fractal_max * fractal_max];

@@ -7,12 +7,17 @@
 #define spec_D(ci) spec_get(ci, D)
 #define spec_Fcul(ci) spec_get(ci, Fcul)
 #define spec_color(ci) spec_get(ci, color)
+#define spec_prepare(ci) spec_get(ci, prepare)
 
 #define spectrum_declare_fields(ci)     \
 constexpr auto spec_F(ci) = get_F(ci);  \
 constexpr auto spec_C(ci) = get_C(ci);  \
 constexpr auto spec_D(ci) = get_D(ci);  \
 constexpr auto spec_Fcul(ci) = get_Fcul(ci);
+
+static void color_prepare(size_t,
+    const color *, const color *,
+    const double *, const double *);
 
 #define spectrum_declare(ci)                                         \
 spectrum_declare_fields(ci);                                         \
@@ -27,6 +32,14 @@ static uint32_t spec_color(ci)(long t, long T) {                     \
     int G = spec_C(ci)[g].G + static_cast<int>(spec_D(ci)[g].G * f); \
     int B = spec_C(ci)[g].B + static_cast<int>(spec_D(ci)[g].B * f); \
     return (0xff << 24) | (R << 16) | (G << 8) | B;                  \
+}                                                                    \
+static void spec_prepare(ci)() { \
+    color_prepare(               \
+        ci.size(),               \
+        spec_C(ci).data(),       \
+        spec_D(ci).data(),       \
+        spec_F(ci).data(),       \
+        spec_Fcul(ci).data());   \
 }
 
 spectrum_declare(greyScale);

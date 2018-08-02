@@ -1,7 +1,7 @@
 #include "image.h"
 #include <QTimer>
 
-static constexpr long default_T = 1 << 10;
+static constexpr long default_T = 1 << 12;
 static constexpr double default_x = -0.5;
 static constexpr double default_y = 0.0;
 static constexpr double default_s = 3.0;
@@ -12,6 +12,7 @@ Image::Image(int dim) : m_vec(dim * dim), m_cfg() {
     m_cfg.xc = default_x;
     m_cfg.yc = default_y;
     m_cfg.s = default_s;
+    m_cfg.color = BlackGoldYellow;
     connect(this, &Image::imageDone, this, &Image::setImage);
 }
 

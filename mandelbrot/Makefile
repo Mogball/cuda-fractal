@@ -1,7 +1,7 @@
 all: main
 
 temp.o: mandelbrot.cu
-	nvcc -rdc=true -c -o temp.o mandelbrot.cu -I ../include
+	nvcc -rdc=true -c -o temp.o mandelbrot.cu -I ../include -std=c++14
 
 mandelbrot.o: temp.o
 	nvcc -dlink -o mandelbrot.o temp.o -l cudart

@@ -10,11 +10,26 @@ __constant__ color  c_D[MAX_SPECTRUM];
 __constant__ double c_F[MAX_SPECTRUM];
 __constant__ double c_Fcul[MAX_SPECTRUM];
 
-static void color_prepare(size_t L, color *c, color *d, double *F, double *Fcul) {
-    errchk( cudaMemcpyToSymbol(c_C,    c,    L * sizeof(color))  );
-    errchk( cudaMemcpyToSymbol(c_d,    d,    L * sizeof(color))  );
-    errchk( cudaMemcpyToSymbol(c_F,    F,    L * sizeof(double)) );
-    errchk( cudaMemcpyToSymbol(c_Fcul, Fcul, L * sizeof(double)) );
+static void color_prepare(size_t L,
+    const color *c, const color *d,
+    const double *F, const double *Fcul) {
+    errchk( cudaMemcpyToSymbol(c_C, c, L * sizeof(color)) );
+    errchk( cudaMemcpyToSymbol(c_D, d, L * sizeof(color)) );
+    errchk( cudaMemcpyToSymbol(c_F, F, L * sizeof(double)) );
+    errchk( cudaMemcpyToSymbol(c_Fcul, Fcul, (L + 1) * sizeof(double)) );
+}
+
+typedef void (*fprepare_t)(void);
+static fprepare_t s_fprepare[] = {
+    spec_prepare(greyScale),
+    spec_prepare(redOrange),
+    spec_prepare(blackGoldYellow),
+    spec_prepare(blackYellowPurple),
+    spec_prepare(blackYellowBlue)
+};
+
+static void color_prepare(render_color color) {
+    (*s_fprepare[color])();
 }
 
 /**
@@ -39,6 +54,24 @@ __device__
 uint32_t color_greyscale(long t, long T) {
     uint8_t grey = (uint8_t) (t / (double) T * 0xff);
     return argb(grey, grey, grey);
+}
+
+__device__
+uint32_t spectrum_color(long t, long T) {
+    double f = (T - t) / (double) T;
+    int g = 0;
+    while (c_Fcul[g] > f || f > c_Fcul[g + 1]) {
+        ++g;
+    }
+    f -= c_Fcul[g];
+    f /= c_F[g];
+    int R = c_C[g].R + static_cast<int>(c_D[g].R * f);
+    int G = c_C[g].G + static_cast<int>(c_D[g].G * f);
+    int B = c_C[g].B + static_cast<int>(c_D[g].B * f);
+    return argb(
+        static_cast<uint8_t>(R),
+        static_cast<uint8_t>(G),
+        static_cast<uint8_t>(B));
 }
 
 /**
@@ -87,7 +120,7 @@ void mandelbrot(render_config config, uint32_t *data) {
             x0 = (i_x / m - 0.5) * config.s + config.xc;
             y0 = (i_y / m - 0.5) * config.s + config.yc;
             t = mandelbrot_compute(x0, y0, config.T);
-            *(data + i_x + i_y * config.max) = color_greyscale(t, config.T);
+            *(data + i_x + i_y * config.max) = spectrum_color(t, config.T);
         }
     }
 }
@@ -103,6 +136,9 @@ void gpu_mandelbrot(const render_config &config, uint32_t *data) {
     uint32_t num_pixels = config.max * config.max;
     uint32_t num_bytes = num_pixels * sizeof(uint32_t);
     errchk( cudaMalloc(&device_data, num_bytes) );
+
+    // Prepare color tables
+    color_prepare(config.color);
 
     // Launch Mandelbrot kernels
     dim3 block_dim(16, 16);

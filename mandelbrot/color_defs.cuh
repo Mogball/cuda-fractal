@@ -2,6 +2,7 @@
 #include <array>
 
 struct color {
+    __device__ color() {}
     constexpr color(int r, int g, int b) : R(r), G(g), B(b) {}
     int R, G, B;
 };
