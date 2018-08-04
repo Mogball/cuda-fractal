@@ -18,6 +18,7 @@ public:
     void launchRender();
     void recenter(int x, int y);
     void zoom(int delta);
+    void toggle();
 
 protected:
     Q_SLOT void renderImage();
@@ -28,7 +29,15 @@ public:
     Q_SIGNAL void renderDone();
 
 private:
+    enum Mode {
+        MANDELBROT,
+        JULIA
+    };
+
     std::vector<uint32_t> m_vec;
     render_config m_cfg;
+    render_config m_bkp;
+    julia_config m_jul;
+    Mode m_mode;
     QImage m_img;
 };

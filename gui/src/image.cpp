@@ -6,13 +6,19 @@ static constexpr double default_x = -0.5;
 static constexpr double default_y = 0.0;
 static constexpr double default_s = 3.0;
 
-Image::Image(int dim) : m_vec(dim * dim), m_cfg() {
+Image::Image(int dim) :
+    m_vec(dim * dim),
+    m_cfg(),
+    m_bkp(),
+    m_jul(),
+    m_mode(MANDELBROT) {
     m_cfg.max = dim;
     m_cfg.T = default_T;
     m_cfg.xc = default_x;
     m_cfg.yc = default_y;
     m_cfg.s = default_s;
     m_cfg.color = BlackGoldYellow;
+    m_cfg.extra = (void *) &m_jul;
     connect(this, &Image::imageDone, this, &Image::setImage);
 }
 
@@ -41,7 +47,14 @@ void Image::zoom(int delta) {
 }
 
 void Image::renderImage() {
-    gpu_mandelbrot(m_cfg, m_vec.data());
+    switch (m_mode) {
+    case MANDELBROT:
+        gpu_mandelbrot(m_cfg, m_vec.data());
+        break;
+    case JULIA:
+        gpu_julia(m_cfg, m_vec.data());
+        break;
+    }
     uchar *data = reinterpret_cast<uchar *>(m_vec.data());
     QImage img{data, m_cfg.max, m_cfg.max, QImage::Format_ARGB32};
     Q_EMIT imageDone(img);
@@ -50,4 +63,22 @@ void Image::renderImage() {
 void Image::setImage(QImage img) {
     m_img = img;
     Q_EMIT renderDone();
+}
+
+void Image::toggle() {
+    switch (m_mode) {
+    case MANDELBROT:
+        m_bkp = m_cfg;
+        m_cfg.xc = 0;
+        m_cfg.yc = 0;
+        m_cfg.s = default_s;
+        m_jul.tx = m_bkp.xc;
+        m_jul.ty = m_bkp.yc;
+        m_mode = JULIA;
+        break;
+    case JULIA:
+        m_cfg = m_bkp;
+        m_mode = MANDELBROT;
+        break;
+    }
 }

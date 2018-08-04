@@ -11,16 +11,6 @@ using namespace std;
 
 static constexpr int display_dim = 2000;
 
-template<int lo, int hi>
-static bool outside(int val) {
-    return val < lo || val > hi;
-}
-
-template<int lo, int hi>
-static bool inside(int val) {
-    return lo <= val && val <= hi;
-}
-
 class Display::Impl {
 public:
     Impl(int dim);
@@ -69,14 +59,24 @@ void Display::wheelEvent(QWheelEvent *ev) {
     ev->accept();
 }
 
-void Display::mouseReleaseEvent(QMouseEvent *ev) {
-    if (outside<0, display_dim>(ev->x()) ||
-        outside<0, display_dim>(ev->y())) {
-        return;
+void Display::mousePressEvent(QMouseEvent *ev) {
+    if (ev->button() == Qt::RightButton) {
+        m_impl->del->toggle();
+        m_impl->del->launchRender();
+        ev->accept();
+    } else {
+        QOpenGLWidget::mousePressEvent(ev);
     }
-    m_impl->del->recenter(ev->x(), ev->y());
-    m_impl->del->launchRender();
-    ev->accept();
+}
+
+void Display::mouseReleaseEvent(QMouseEvent *ev) {
+    if (ev->button() == Qt::LeftButton) {
+        m_impl->del->recenter(ev->x(), ev->y());
+        m_impl->del->launchRender();
+        ev->accept();
+    } else {
+        QOpenGLWidget::mouseReleaseEvent(ev);
+    }
 }
 
 void Display::renderUpdate() {
